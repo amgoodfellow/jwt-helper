@@ -1,0 +1,54 @@
+name: jwt-helper
+version: "0.1"
+author: "Aaron Goodfellow"
+about: "Decrypts, Verifies, or creates JWTs and JWEs"
+args:
+  - algorithm:
+      short: a
+      long: algorithm
+      value_name: algorithm
+      takes_value: true
+      help: Takes values HS256, HS512, HS128 etc
+  - base64:
+      long: base64
+      help: Indicates that the secret key is base64 encoded
+  - config:
+      short: c
+      long: config
+      value_name: FILE
+      help: Specify the location of your config file ($HOME/jwt-helper.config is default if no file is specified)
+      takes_value: true
+  - interactive:
+      short: i
+      long: interactive
+      help: Start this utility in an experimental interactive mode
+  - password:
+      short: p
+      long: password
+      value_name: password
+      help: Optionally supply the password for decryption puprposes
+      takes_value: true
+  - signing_key:
+      short: key
+      long: key
+      help: Optionally supply the signing key for verification purposes
+      takes_value: true
+subcommands:
+  - verify:
+      about: Verifies a JWT's signature
+      author: Aaron Goodfellow
+      args:
+        - token:
+            help: Provide a token to verify
+            required: true
+            index: 1
+        - ignore_exp:
+            long: ignore-exp
+            help: Optionally ignore expiration dates
+  - decrypt:
+      about: Decrypts a JWE
+      args:
+        - token:
+            help: Provide a token to decrypt
+            required: true
+            index: 1
