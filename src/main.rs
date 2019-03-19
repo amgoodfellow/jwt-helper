@@ -1,22 +1,30 @@
 extern crate jsonwebtoken as jwt;
 #[macro_use]
 extern crate serde_derive;
-extern crate base64;
 #[macro_use]
 extern crate clap;
+extern crate base64;
 
 use std::io;
 use jwt::{encode, decode, Header, Algorithm, Validation};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
-    telephoneNumber: String,
-    gid: String,
-    mail: String,
     displayName: String,
-    givenName: String,
     uid: String,
     pidm: String
+}
+
+fn get_algorithm(param: Option<&str>) -> Algorithm {
+    match param {
+        Some("HS256") => Algorithm::HS256,
+        Some("HS384") => Algorithm::HS384,
+        Some("HS512") => Algorithm::HS512,
+        _ => {
+            println!("Algorithm not specified or incorrect - defaulting to HS256");
+            Algorithm::HS256
+        }
+    }
 }
 
 fn main() {
@@ -25,20 +33,26 @@ fn main() {
 
     let password = matches.value_of("password").unwrap_or("CHANGEME");
     let signing_key = matches.value_of("signing_key").unwrap_or("CHANGEME");
-    let algorithm = matches.value_of("algorithm").unwrap_or("HS512");
+    let algorithm = get_algorithm(matches.value_of("algorithm"));
 
-    if let Some(matches) = matches.subcommand_matches("verify") {
-        let token = matches.value_of("token").unwrap();
-        let base_64 = base64::decode(token).unwrap();
-        let validation = Validation::new(Algorithm::HS512);
 
-        let result = decode::<Claims>(&token, &base_64, &validation);
-        println!("{:?}", result);
-    }
 
-    if let Some(matches) = matches.subcommand_matches("decrypt") {
-        let token = matches.value_of("token").unwrap();
+    match matches.subcommand() {
+        ("verify", Some(blob)) => {
+            let token = blob.value_of("token").unwrap();
+            let base_64 = base64::decode(token).unwrap();
+            let validation = Validation::new(Algorithm::HS512);
 
+            let result = decode::<Claims>(&token, &base_64, &validation);
+            println!("Verifying token flow");
+        }
+        ("decrypt", Some(blob)) => {
+            let token = blob.value_of("token").unwrap();
+            let base_64 = base64::decode(token).unwrap();
+
+            println!("Decrypting token flow");
+        }
+        _ => println!("Oof")
     }
 
 }
