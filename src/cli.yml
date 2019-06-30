@@ -3,12 +3,6 @@ version: "0.1"
 author: "Aaron Goodfellow"
 about: "Decrypts, Verifies, or creates JWTs and JWEs"
 args:
-  - algorithm:
-      short: a
-      long: algorithm
-      value_name: algorithm
-      takes_value: true
-      help: Takes values HS256, HS512, HS128 etc
   - base64:
       long: base64
       help: Indicates that the secret key is base64 encoded

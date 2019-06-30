@@ -6,25 +6,13 @@ extern crate clap;
 extern crate base64;
 
 use std::io;
-use jwt::{encode, decode, Header, Algorithm, Validation};
+use jwt::{encode, decode, decode_header, Header, Algorithm, Validation};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
-    displayName: String,
-    uid: String,
-    pidm: String
-}
-
-fn get_algorithm(param: Option<&str>) -> Algorithm {
-    match param {
-        Some("HS256") => Algorithm::HS256,
-        Some("HS384") => Algorithm::HS384,
-        Some("HS512") => Algorithm::HS512,
-        _ => {
-            println!("Algorithm not specified or incorrect - defaulting to HS256");
-            Algorithm::HS256
-        }
-    }
+    name: String,
+    sub: String,
+    iat: i64
 }
 
 fn main() {
@@ -33,21 +21,34 @@ fn main() {
 
     let password = matches.value_of("password").unwrap_or("CHANGEME");
     let signing_key = matches.value_of("signing_key").unwrap_or("CHANGEME");
-    let algorithm = get_algorithm(matches.value_of("algorithm"));
-
 
 
     match matches.subcommand() {
-        ("verify", Some(blob)) => {
-            let token = blob.value_of("token").unwrap();
-            let base_64 = base64::decode(token).unwrap();
-            let validation = Validation::new(Algorithm::HS512);
+        ("verify", Some(sub_param)) => {
+            // Get token
+            let token = sub_param.value_of("token").unwrap();
+            let ignore_expiration = sub_param.is_present("ignore_exp");
 
-            let result = decode::<Claims>(&token, &base_64, &validation);
-            println!("Verifying token flow");
+            // Extract necessary info from header
+            let header = decode_header(&token).unwrap();
+            let mut validation = Validation::new(header.alg);
+            validation.validate_exp = !ignore_expiration;
+
+
+            // Attempt to verify
+            let result = decode::<Claims>(&token, signing_key.as_ref(), &validation);
+
+            let result = match result {
+                Ok(jwt) => jwt,
+                Err(error) => panic!("{:?}", error.into_kind()),
+            };
+
+            println!("{:?}", result);
+
+
         }
-        ("decrypt", Some(blob)) => {
-            let token = blob.value_of("token").unwrap();
+        ("decrypt", Some(sub_param)) => {
+            let token = sub_param.value_of("token").unwrap();
             let base_64 = base64::decode(token).unwrap();
 
             println!("Decrypting token flow");
