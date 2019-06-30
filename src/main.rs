@@ -5,14 +5,14 @@ extern crate serde_derive;
 extern crate clap;
 extern crate base64;
 
+use jwt::{decode, decode_header, encode, Algorithm, Header, Validation};
 use std::io;
-use jwt::{encode, decode, decode_header, Header, Algorithm, Validation};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
     name: String,
     sub: String,
-    iat: i64
+    iat: i64,
 }
 
 fn main() {
@@ -21,7 +21,6 @@ fn main() {
 
     let password = matches.value_of("password").unwrap_or("CHANGEME");
     let signing_key = matches.value_of("signing_key").unwrap_or("CHANGEME");
-
 
     match matches.subcommand() {
         ("verify", Some(sub_param)) => {
@@ -34,7 +33,6 @@ fn main() {
             let mut validation = Validation::new(header.alg);
             validation.validate_exp = !ignore_expiration;
 
-
             // Attempt to verify
             let result = decode::<Claims>(&token, signing_key.as_ref(), &validation);
 
@@ -44,8 +42,6 @@ fn main() {
             };
 
             println!("{:?}", result);
-
-
         }
         ("decrypt", Some(sub_param)) => {
             let token = sub_param.value_of("token").unwrap();
@@ -53,7 +49,6 @@ fn main() {
 
             println!("Decrypting token flow");
         }
-        _ => println!("Oof")
+        _ => println!("Oof"),
     }
-
 }
