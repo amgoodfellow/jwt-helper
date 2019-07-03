@@ -23,9 +23,17 @@ fn main() {
     let signing_key = matches.value_of("signing_key").unwrap_or("CHANGEME");
 
     match matches.subcommand() {
+        ("info", Some(sub_param)) => {
+            let token = sub_param.value_of("token").unwrap();
+            let token_vec : Vec<&str> = token.split(".").collect();
+            let decoded_header = base64::decode(token_vec.get(0).unwrap()).unwrap();
+            let decoded_claims = base64::decode(token_vec.get(1).unwrap()).unwrap();
+            println!("{:?}", std::str::from_utf8(&decoded_header).unwrap());
+            println!("{:?}", std::str::from_utf8(&decoded_claims).unwrap());
+        }
         ("verify", Some(sub_param)) => {
             // Get token
-            let token = sub_param.value_of("token").unwrap();
+            let token = sub_param.value_of("token").expect("No token provided");
             let ignore_expiration = sub_param.is_present("ignore_exp");
 
             // Extract necessary info from header
@@ -45,7 +53,7 @@ fn main() {
         }
         ("decrypt", Some(sub_param)) => {
             let token = sub_param.value_of("token").unwrap();
-            let base_64 = base64::decode(token).unwrap();
+            //let base_64 = base64::decode(token).unwrap();
 
             println!("Decrypting token flow");
         }

@@ -46,3 +46,10 @@ subcommands:
             help: Provide a token to decrypt
             required: true
             index: 1
+  - info:
+      about: Gives information about the JWT taken from the header. Does not verify signature
+      args:
+        - token:
+            help: Provide a token you want info about
+            required: true
+            index: 1
