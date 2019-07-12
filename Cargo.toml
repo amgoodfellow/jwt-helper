@@ -9,3 +9,4 @@ serde_derive = "1"
 serde = "1"
 base64 = "0.10.1"
 clap = {version = "2", features = ["yaml"]}
+regex = "1"
